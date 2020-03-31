@@ -1,4 +1,4 @@
-# WAGWAG - working and grounded
+# WAG - working and grounded
 
 CEL
 Celem projektu jest stworzenie własnego, interpretowanego języka programowania przy użyciu technologii Python. Prawdopodobnie nie będzie on równie dobry i szybki jak już istniejące języki, ale na pewno poszerzy naszą wiedzę i umiejętności programistyczne.
