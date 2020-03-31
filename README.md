@@ -1,9 +1,11 @@
 # WAG - working and grounded
 
 CEL
+
 Celem projektu jest stworzenie własnego, interpretowanego języka programowania przy użyciu technologii Python. Prawdopodobnie nie będzie on równie dobry i szybki jak już istniejące języki, ale na pewno poszerzy naszą wiedzę i umiejętności programistyczne.
 
 ZAŁOŻENIA
+
 Jak sama nazwa wskazuje, chcemy aby język był działający i dostosowany do naszych realiów. Planujemy uzyskać to w następujących krokach:
 1) Stworzenie Lexera, za pomocą którego zostanie przeprowadzona analiza leksykalna, dzielenie tekstu na tokeny
 2) Stworzenie Parsera, za pomocą którego zostanie przeprowadzona analiza składniowa, zamiana listy tokenów w drzewo węzłów (AST)
