@@ -80,6 +80,7 @@ plusXD = 'plus'
 minusXD = 'minus'
 mulXD = 'mul'
 divXD = 'div'
+powerXD = 'power'
 lparenXD = 'lparen'
 rparenXD = 'rparen'
 eofXD = 'eof'
@@ -133,6 +134,9 @@ class Lexer:
 				self.advance()
 			elif self.current_char == '*':
 				tokens.append(Token(mulXD, pos_start=self.pos))
+				self.advance()
+			elif self.current_char == '^':
+				tokens.append(Token(powerXD, pos_start=self.pos))
 				self.advance()
 			elif self.current_char == '/':
 				tokens.append(Token(divXD, pos_start=self.pos))
@@ -237,6 +241,7 @@ class ParseResult:
 #######################################
 
 class Parser:
+
 	def __init__(self, tokens):
 		self.tokens = tokens
 		self.tok_idx = -1
@@ -248,6 +253,8 @@ class Parser:
 			self.current_tok = self.tokens[self.tok_idx]
 		return self.current_tok
 
+	
+
 	def parse(self):
 		res = self.expr()
 		if not res.error and self.current_tok.type != eofXD:
@@ -255,9 +262,40 @@ class Parser:
 				self.current_tok.pos_start, self.current_tok.pos_end,
 				"Expected '+', '-', '*' or '/'"
 			))
-		return res
+		return res    
+    
+    
+   
+	def atom(self):
+		res = ParseResult()
+		tok = self.current_tok
 
-	###################################
+		if tok.type in (intXD, floatXD):
+			res.register(self.advance())
+			return res.success(NumberNode(tok))
+
+
+		elif tok.type == lparenXD:
+			res.register(self.advance())
+			expr = res.register(self.expr())
+		if res.error: return res
+		if self.current_tok.type == rparenXD:
+			res.register(self.advance())
+			return res.success(expr)
+		else:
+			return res.failure(InvalidSyntaxError(
+					self.current_tok.pos_start, self.current_tok.pos_end,
+						"Expected ')'"
+					))
+
+
+		return res.failure(InvalidSyntaxError
+	(tok.pos_start, tok.pos_end,
+	 "Expected int, float, '+', '-', '('"))
+
+
+	def power(self):
+		return self.bin_op(self.atom, (powerXD, ), self.factor)
 
 	def factor(self):
 		res = ParseResult()
@@ -269,27 +307,9 @@ class Parser:
 			if res.error: return res
 			return res.success(UnaryOpNode(tok, factor))
 		
-		elif tok.type in (intXD, floatXD):
-			res.register(self.advance())
-			return res.success(NumberNode(tok))
+		
 
-		elif tok.type == lparenXD:
-			res.register(self.advance())
-			expr = res.register(self.expr())
-			if res.error: return res
-			if self.current_tok.type == rparenXD:
-				res.register(self.advance())
-				return res.success(expr)
-			else:
-				return res.failure(InvalidSyntaxError(
-					self.current_tok.pos_start, self.current_tok.pos_end,
-					"Expected ')'"
-				))
-
-		return res.failure(InvalidSyntaxError(
-			tok.pos_start, tok.pos_end,
-			"Expected int or float"
-		))
+		return self.power()
 
 	def term(self):
 		return self.bin_op(self.factor, (mulXD, divXD))
@@ -299,15 +319,17 @@ class Parser:
 
 	###################################
 
-	def bin_op(self, func, ops):
+	def bin_op(self, func_a, ops, func_b=None):
+		if func_b == None:
+			func_b = func_a
 		res = ParseResult()
-		left = res.register(func())
+		left = res.register(func_a())
 		if res.error: return res
 
 		while self.current_tok.type in ops:
 			op_tok = self.current_tok
 			res.register(self.advance())
-			right = res.register(func())
+			right = res.register(func_b())
 			if res.error: return res
 			left = BinOpNode(left, op_tok, right)
 
@@ -376,6 +398,10 @@ class Number:
 
 			return Number(self.value / other.value).set_context(self.context), None
 
+	def powered_by(self, other):
+		if isinstance(other, Number):
+			return Number(self.value ** other.value).set_context(self.context), None
+
 	def __repr__(self):
 		return str(self.value)
 
@@ -424,6 +450,8 @@ class Interpreter:
 			result, error = left.multed_by(right)
 		elif node.op_tok.type == divXD:
 			result, error = left.dived_by(right)
+		elif node.op_tok.type == powerXD:
+			result, error = left.powered_by(right)
 
 		if error:
 			return res.failure(error)
