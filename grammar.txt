@@ -2,4 +2,5 @@ expr        : term((plusXD|minusXD) term)*
 term        : factor ((mulXD|divXD) factor)*
 factor      : (plusXD|minusXD) factor | power
 power       : atom (powerXD factor)*
-atom        : integerXD | lparenXD expr rparenXD 
+atom        : integerXD|floatXD|identifierXD
+            : lparenXD expr rparenXD
