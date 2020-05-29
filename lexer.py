@@ -45,15 +45,22 @@ class Lexer:
             elif self.current_char == '/':
                 tokens.append(Token(divXD, begin=self.pos))
                 self.progress()
-            elif self.current_char == '=':
-                tokens.append(Token(equalXD, begin=self.pos))
-                self.progress()
             elif self.current_char == '(':
                 tokens.append(Token(lparenXD, begin=self.pos))
                 self.progress()
             elif self.current_char == ')':
                 tokens.append(Token(rparenXD, begin=self.pos))
                 self.progress()
+            elif self.current_char == '!':
+                token, error = self.make_not_equals()
+                if error: return [], error
+                tokens.append(token)
+            elif self.current_char == '=':
+                tokens.append(self.make_equals())
+            elif self.current_char == '<':
+                tokens.append(self.make_less_than())
+            elif self.current_char == '>':
+                tokens.append(self.make_greater_than())
             else:
                 begin = self.pos.copy()
                 char = self.current_char
@@ -91,3 +98,48 @@ class Lexer:
 
         tok_type = keywordXD if id_str in keywordsXD else identifierXD
         return Token(tok_type, id_str, begin, self.pos)
+    
+
+    def make_not_equals(self):
+        pos_start = self.pos.copy()
+        self.progress()
+
+        if self.current_char == '=':
+            self.progress()
+            return Token(neXD, pos_start, self.pos), None
+
+        self.progress()
+        return None, ExpectedCharError(pos_start, self.pos, "'=' (after '!')")
+    
+    def make_equals(self):
+        tok_type = equalXD
+        pos_start = self.pos.copy()
+        self.progress()
+
+        if self.current_char == '=':
+            self.progress()
+            tok_type = eeXD
+
+        return Token(tok_type, pos_start, self.pos)
+
+    def make_less_than(self):
+        tok_type = ltXD
+        pos_start = self.pos.copy()
+        self.progress()
+
+        if self.current_char == '=':
+            self.progress()
+            tok_type = lteXD
+
+        return Token(tok_type, pos_start, self.pos)
+
+    def make_greater_than(self):
+        tok_type = gtXD
+        pos_start = self.pos.copy()
+        self.progress()
+
+        if self.current_char == '=':
+            self.progress()
+            tok_type = gteXD
+
+        return Token(tok_type, pos_start, self.pos)

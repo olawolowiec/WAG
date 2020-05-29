@@ -51,7 +51,6 @@ class Interpreter:
 	def no_visit_method(self, node, context):
 		raise Exception(f'No visit_{type(node).__name__} method defined')
 
-	###################################
 
 	def visit_NumberNode(self, node, context):
 		return RTResult().success(
@@ -98,13 +97,29 @@ class Interpreter:
 		elif node.op_tok.type == divXD:
 			result, error = left.dived_by(right)
 		elif node.op_tok.type == powerXD:
-			result, error = left.powered_by(right)
+			result, error = left.powed_by(right)
+		elif node.op_tok.type == eeXD:
+			result, error = left.get_comparison_eq(right)
+		elif node.op_tok.type == neXD:
+			result, error = left.get_comparison_ne(right)
+		elif node.op_tok.type == ltXD:
+			result, error = left.get_comparison_lt(right)
+		elif node.op_tok.type == gtXD:
+			result, error = left.get_comparison_gt(right)
+		elif node.op_tok.type == lteXD:
+			result, error = left.get_comparison_lte(right)
+		elif node.op_tok.type == gteXD:
+			result, error = left.get_comparison_gte(right)
+		elif node.op_tok.matches(keywordXD, 'I'):
+			result, error = left.anded_by(right)
+		elif node.op_tok.matches(keywordXD, 'LUB'):
+			result, error = left.ored_by(right)
 
 		if error:
 			return res.failure(error)
 		else:
 			return res.success(result.set_pos(node.begin, node.end))
-
+        
 	def visit_UnaryOpNode(self, node, context):
 		res = RTResult()
 		number = res.register(self.visit(node.node, context))
@@ -114,7 +129,9 @@ class Interpreter:
 
 		if node.op_tok.type == minusXD:
 			number, error = number.multed_by(Number(-1))
-
+		elif node.op_tok.matches(keywordXD, 'NIE'):
+			number, error = number.notted()
+            
 		if error:
 			return res.failure(error)
 		else:

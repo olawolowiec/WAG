@@ -1,4 +1,7 @@
-expr        : term((plusXD|minusXD) term)*
+expr        : comp ((keywordXD:I|keywordXD:LUB) comp-expr)*
+comp-expr   : NIE comp-expr
+            : arith-expr ((eeXD|ltXD|gtXD|lteXD|gteXD) arith-expr )*
+arith-expr  : term((plusXD|minusXD) term)*
 term        : factor ((mulXD|divXD) factor)*
 factor      : (plusXD|minusXD) factor | power
 power       : atom (powerXD factor)*
