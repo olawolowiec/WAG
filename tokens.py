@@ -11,9 +11,22 @@ lparenXD = 'lparen'
 rparenXD = 'rparen'
 equalXD ='equal'
 eofXD = 'eof'
+eeXD = 'ee' 
+neXD = 'ne' 
+ltXD = 'lt' 
+gtXD = 'gt' 
+lteXD = 'lte' 
+gteXD = 'gte' 
+
+
+
 keywordsXD = [
     'LICZBA',
-    'NAPIS'
+    'NAPIS',
+    'LUB',
+    'I',
+    'NIE'
+    
 ]
 
 
