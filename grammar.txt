@@ -7,3 +7,4 @@ factor      : (plusXD|minusXD) factor | power
 power       : atom (powerXD factor)*
 atom        : integerXD|floatXD|identifierXD
             : lparenXD expr rparenXD
+while-expr  : keywordXD:DOPÓKI expr keywordXD:DOPÓTY expr

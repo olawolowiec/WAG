@@ -1,11 +1,12 @@
 from wag import *
 from tokens import *
 from position import *
+from error import *
 import string
 import string_with_arrows
 
 digits = '0123456789'
-letters = string.ascii_letters
+letters = string.ascii_letters + 'ĄąŻżŹźÓóŚś'
 letters_digits = letters + digits
 
 class Lexer:

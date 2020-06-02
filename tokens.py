@@ -25,7 +25,13 @@ keywordsXD = [
     'NAPIS',
     'LUB',
     'I',
-    'NIE'
+    'NIE',
+    'DOPÓKI',
+    'DOPÓTY',
+    'JEŻELI', #if
+    'BĄDŹ', #else if
+    'W_PRZECIWNYM_PRZYPADKU', #else
+    "TO" #then
     
 ]
 
