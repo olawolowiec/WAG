@@ -45,3 +45,19 @@ class UnaryOpNode:
 
 	def __repr__(self):
 		return f'({self.op_tok}, {self.node})'
+
+class IfNode:
+	def __init__(self, cases, else_case):
+		self.cases = cases
+		self.else_case = else_case
+
+		self.begin = self.cases[0][0].begin
+		self.end = (self.else_case or self.cases[len(self.cases) - 1][0]).end
+
+class WhileNode:
+	def __init__(self, condition_node, body_node):
+		self.condition_node = condition_node
+		self.body_node = body_node
+
+		self.begin = self.condition_node.begin
+		self.end = self.body_node.end

@@ -74,6 +74,14 @@ class Parser:
                     self.current_tok.begin, self.current_tok.end,
                     "Expected ')'"
                 ))
+        elif tok.matches(keywordXD, 'JEŻELI'):
+            if_expr = res.register(self.if_expr())
+            if res.error: return res
+            return res.success(if_expr)
+        elif tok.matches(keywordXD, 'DOPÓKI'):
+            while_expr = res.register(self.while_expr())
+            if res.error: return res
+            return res.success(while_expr)
 
         return res.failure(InvalidSyntaxError
                            (tok.begin, tok.end,
@@ -116,7 +124,7 @@ class Parser:
 		
         if res.error:
             return res.failure(InvalidSyntaxError(
-				self.current_tok.pos_start, self.current_tok.pos_end,
+				self.current_tok.begin, self.current_tok.end,
 				"Expected int, float, identifier, '+', '-', '(' or 'NIE'"
 			))
 
@@ -125,10 +133,10 @@ class Parser:
     def expr(self):
         res = ParseResult()
 
+        #if self.current_tok.matches(keywordXD, 'LICZBA'):
+        #    res.register_progression()
+        #    self.progress()
         if self.current_tok.matches(keywordXD, 'LICZBA'):
-            res.register_progression()
-            self.progress()
-        if self.current_tok.matches(keywordXD, 'NAPIS'):
             res.register_progression()
             self.progress()
 
@@ -181,3 +189,91 @@ class Parser:
             left = BinOpNode(left, op_tok, right)
 
         return res.success(left)
+
+    def if_expr(self):
+        res = ParseResult()
+        cases = []
+        else_case = None
+
+        if not self.current_tok.matches(keywordXD, 'JEŻELI'):
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                f"Expected 'JEŻELI'"
+            ))
+
+        res.register_progression()
+        self.progress()
+
+        condition = res.register(self.expr())
+        if res.error: return res
+
+        if not self.current_tok.matches(keywordXD, 'TO'):
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                f"Expected 'TO'"
+            ))
+
+        res.register_progression()
+        self.progress()
+
+        expr = res.register(self.expr())
+        if res.error: return res
+        cases.append((condition, expr))
+
+        while self.current_tok.matches(keywordXD, 'BĄDŹ'):
+            res.register_progression()
+            self.progress()
+
+            condition = res.register(self.expr())
+            if res.error: return res
+
+            if not self.current_tok.matches(keywordXD, 'TO'):
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    f"Expected 'TO'"
+                ))
+
+            res.register_progression()
+            self.progress()
+
+            expr = res.register(self.expr())
+            if res.error: return res
+            cases.append((condition, expr))
+
+        if self.current_tok.matches(keywordXD, 'W_PRZECIWNYM_PRZYPADKU'):
+            res.register_progression()
+            self.progress()
+
+            else_case = res.register(self.expr())
+            if res.error: return res
+
+        return res.success(IfNode(cases, else_case))
+
+    def while_expr(self):
+        res = ParseResult()
+
+        if not self.current_tok.matches(keywordXD, 'DOPÓKI'):
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                f"Expected 'DOPÓKI'"
+            ))
+
+        res.register_progression()
+        self.progress()
+
+        condition = res.register(self.expr())
+        if res.error: return res
+
+        if not self.current_tok.matches(keywordXD, 'DOPÓTY'):
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                f"Expected 'DOPÓTY'"
+            ))
+
+        res.register_progression()
+        self.progress()
+
+        body = res.register(self.expr())
+        if res.error: return res
+
+        return res.success(WhileNode(condition, body))
