@@ -9,6 +9,8 @@ divXD = 'div'
 powerXD = 'power'
 lparenXD = 'lparen'
 rparenXD = 'rparen'
+lsquareXD = 'lsquare'
+rsquareXD = 'rsquare'
 equalXD ='equal'
 eofXD = 'eof'
 eeXD = 'ee' 
@@ -16,13 +18,13 @@ neXD = 'ne'
 ltXD = 'lt' 
 gtXD = 'gt' 
 lteXD = 'lte' 
-gteXD = 'gte' 
+gteXD = 'gte'
+commaXD = 'comma'
 
 
 
 keywordsXD = [
-    'LICZBA',
-    'NAPIS',
+    'ZMIENNA',
     'LUB',
     'I',
     'NIE',
@@ -34,7 +36,6 @@ keywordsXD = [
     "TO" #then
     
 ]
-
 
 class Token:
     def __init__(self, type_, value=None, begin=None, end=None):

@@ -26,9 +26,9 @@ class Context:
 		self.symbol_table = None
 
 class SymbolTable:
-	def __init__(self):
+	def __init__(self, parent=None):
 		self.symbols = {}
-		self.parent = None
+		self.parent = parent
 
 	def get(self, name):
 		value = self.symbols.get(name, None)
@@ -49,13 +49,25 @@ class Interpreter:
 		return method(node, context)
 
 	def no_visit_method(self, node, context):
-		raise Exception(f'No visit_{type(node).__name__} method defined')
+		raise Exception(f'No visit_{type(node).__name__} zdefiniowana metoda')
 
 
 	def visit_NumberNode(self, node, context):
 		return RTResult().success(
 			Number(node.tok.value).set_context(context).set_pos(node.begin, node.end)
 		)
+
+	def visit_ListNode(self, node, context):
+		res = RTResult()
+		elements = []
+
+		for element_node in node.element_nodes:
+			elements.append(res.register(self.visit(element_node, context)))
+			if res.error: return res
+
+		return res.success(
+			List(elements).set_context(context).set_pos(node.begin, node.end)
+			)
 
 	def visit_VarAccessNode(self, node, context):
 		res = RTResult()
@@ -65,7 +77,7 @@ class Interpreter:
 		if not value:
 			return res.failure(RTError(
 				node.begin, node.end,
-				f"'{var_name}' is not defined",
+				f"'{var_name}' nie została zdefiniowana",
 				context
 			))
 
@@ -149,7 +161,6 @@ class Interpreter:
 				if res.error: return res
 				return res.success(expr_value)
 
-
 		if node.else_case:
 			else_value = res.register(self.visit(node.else_case, context))
 			if res.error: return res
@@ -159,6 +170,7 @@ class Interpreter:
 
 	def visit_WhileNode(self, node, context):
 		res = RTResult()
+		elements = []
 
 		while True:
 			condition = res.register(self.visit(node.condition_node, context))
@@ -166,7 +178,9 @@ class Interpreter:
 
 			if not condition.is_true(): break
 
-			res.register(self.visit(node.body_node, context))
+			elements.append(res.register(self.visit(node.body_node, context)))
 			if res.error: return res
 
-		return res.success(None)
+		return res.success(
+			List(elements).set_context(context).set_pos(node.begin, node.end)
+		)

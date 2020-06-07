@@ -8,6 +8,12 @@ class NumberNode:
 	def __repr__(self):
 		return f'{self.tok}'
 
+class ListNode:
+	def __init__(self, element_nodes, begin, end):
+		self.element_nodes = element_nodes
+		self. begin = begin
+		self.end = end
+
 class VarAccessNode:
 	def __init__(self, var_name_tok):
 		self.var_name_tok = var_name_tok

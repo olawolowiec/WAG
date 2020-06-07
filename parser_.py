@@ -7,12 +7,15 @@ class ParseResult:
     def __init__(self):
         self.error = None
         self.node = None
+        self.last_registered_progress_count = 0
         self.progress_count = 0
 
     def register_progression(self):
+        self.last_registered_progress_count = 1
         self.progress_count += 1
 
     def register(self, res):
+        self.last_registered_progress_count = res.progress_count
         self.progress_count += res.progress_count
         if res.error: self.error = res.error
         return res.node
@@ -22,7 +25,8 @@ class ParseResult:
         return self
 
     def failure(self, error):
-        self.error = error
+        if not self.error or self.last_registered_progress_count == 0:
+            self.error = error
         return self
 
 class Parser:
@@ -42,7 +46,7 @@ class Parser:
         if not res.error and self.current_tok.type != eofXD:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                "Expected '+', '-', '*', '/' or '^'"
+                "Oczekiwany znak '+', '-', '*', '/' or '^'"
             ))
         return res
 
@@ -72,8 +76,13 @@ class Parser:
             else:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Expected ')'"
+                    "Oczekiwano ')'"
                 ))
+        elif tok.type == lsquareXD:
+            list_expr = res.register(self.list_expr())
+            if res.error: return res
+            return res.success(list_expr)
+
         elif tok.matches(keywordXD, 'JEŻELI'):
             if_expr = res.register(self.if_expr())
             if res.error: return res
@@ -85,7 +94,7 @@ class Parser:
 
         return res.failure(InvalidSyntaxError
                            (tok.begin, tok.end,
-                            "Expected int, float, '+', '-', '('"))
+                            "Oczekiwano int, float, '+', '-', '('"))
 
     def power(self):
         return self.bin_op(self.atom, (powerXD,), self.factor)
@@ -125,7 +134,7 @@ class Parser:
         if res.error:
             return res.failure(InvalidSyntaxError(
 				self.current_tok.begin, self.current_tok.end,
-				"Expected int, float, identifier, '+', '-', '(' or 'NIE'"
+				"Oczekiwano int, float, identifier, '+', '-', '(' or 'NIE'"
 			))
 
         return res.success(node)
@@ -133,17 +142,14 @@ class Parser:
     def expr(self):
         res = ParseResult()
 
-        #if self.current_tok.matches(keywordXD, 'LICZBA'):
-        #    res.register_progression()
-        #    self.progress()
-        if self.current_tok.matches(keywordXD, 'LICZBA'):
+        if self.current_tok.matches(keywordXD, 'ZMIENNA'):
             res.register_progression()
             self.progress()
 
             if self.current_tok.type != identifierXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Expected identifier"
+                    "Oczekiwany identyfikator"
                 ))
 
             var_name = self.current_tok
@@ -153,7 +159,7 @@ class Parser:
             if self.current_tok.type != equalXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Expected '='"
+                    "Oczekiwany znak '='"
                 ))
 
             res.register_progression()
@@ -167,7 +173,7 @@ class Parser:
         if res.error:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                "Expected 'var', int, float, identifier, '+', '-' or '('"
+                "Oczekiwano 'ZMIENNA', int, float, identifier, '+', '-' or '('"
             ))
 
         return res.success(node)
@@ -190,6 +196,52 @@ class Parser:
 
         return res.success(left)
 
+    def list_expr(self):
+        res = ParseResult()
+        element_nodes = []
+        begin = self.current_tok.begin.copy()
+
+        if self.current_tok.type != lsquareXD:
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.begin, self.current_tok.end,
+                f"Oczekiwany znak '['"
+            ))
+        res.register_progression()
+        self.progress()
+
+        if self.current_tok.type == rsquareXD:
+            res.register_progression()
+            self.progress()
+        else:
+            element_nodes.append(res.register(self.expr()))
+            if res.error:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    "Oczekiwany znak ']', 'ZMIENNA', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'Nie'"
+                ))
+
+            while self.current_tok.type == commaXD:
+                res.register_progression()
+                self.progress()
+
+                element_nodes.append(res.register(self.expr()))
+                if res.error: return res
+
+            if self.current_tok.type != rsquareXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    f"Oczekiwany znak ',' lub ']'"
+                ))
+
+            res.register_progression()
+            self.progress()
+
+        return res.success(ListNode(
+            element_nodes,
+            begin,
+            self.current_tok.end.copy()
+        ))
+
     def if_expr(self):
         res = ParseResult()
         cases = []
@@ -197,7 +249,7 @@ class Parser:
 
         if not self.current_tok.matches(keywordXD, 'JEŻELI'):
             return res.failure(InvalidSyntaxError(
-                self.current_tok.pos_start, self.current_tok.pos_end,
+                self.current_tok.begin, self.current_tok.end,
                 f"Expected 'JEŻELI'"
             ))
 
@@ -209,7 +261,7 @@ class Parser:
 
         if not self.current_tok.matches(keywordXD, 'TO'):
             return res.failure(InvalidSyntaxError(
-                self.current_tok.pos_start, self.current_tok.pos_end,
+                self.current_tok.begin, self.current_tok.end,
                 f"Expected 'TO'"
             ))
 
@@ -229,7 +281,7 @@ class Parser:
 
             if not self.current_tok.matches(keywordXD, 'TO'):
                 return res.failure(InvalidSyntaxError(
-                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    self.current_tok.begin, self.current_tok.end,
                     f"Expected 'TO'"
                 ))
 
@@ -254,7 +306,7 @@ class Parser:
 
         if not self.current_tok.matches(keywordXD, 'DOPÓKI'):
             return res.failure(InvalidSyntaxError(
-                self.current_tok.pos_start, self.current_tok.pos_end,
+                self.current_tok.begin, self.current_tok.end,
                 f"Expected 'DOPÓKI'"
             ))
 
@@ -266,7 +318,7 @@ class Parser:
 
         if not self.current_tok.matches(keywordXD, 'DOPÓTY'):
             return res.failure(InvalidSyntaxError(
-                self.current_tok.pos_start, self.current_tok.pos_end,
+                self.current_tok.begin, self.current_tok.end,
                 f"Expected 'DOPÓTY'"
             ))
 

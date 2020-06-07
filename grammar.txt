@@ -7,4 +7,6 @@ factor      : (plusXD|minusXD) factor | power
 power       : atom (powerXD factor)*
 atom        : integerXD|floatXD|identifierXD
             : lparenXD expr rparenXD
+            : list-expr
 while-expr  : keywordXD:DOPÓKI expr keywordXD:DOPÓTY expr
+list-expr   : lsquareXD (expr (COMMA expr)*)? rsquareXD
