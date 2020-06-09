@@ -6,7 +6,7 @@ import string
 import string_with_arrows
 
 digits = '0123456789'
-letters = string.ascii_letters + 'ĄąŻżŹźÓóŚś'
+letters = string.ascii_letters + 'ĄąĘęŻżŹźÓóŚś'
 letters_digits = letters + digits
 
 class Lexer:
@@ -35,8 +35,7 @@ class Lexer:
                 tokens.append(Token(plusXD, begin=self.pos))
                 self.progress()
             elif self.current_char == '-':
-                tokens.append(Token(minusXD, begin=self.pos))
-                self.progress()
+                tokens.append(self.make_minus_or_arrow())
             elif self.current_char == '*':
                 tokens.append(Token(mulXD, begin=self.pos))
                 self.progress()
@@ -68,6 +67,9 @@ class Lexer:
                 tokens.append(self.make_less_than())
             elif self.current_char == '>':
                 tokens.append(self.make_greater_than())
+            elif self.current_char == ',':
+                tokens.append(Token(commaXD, begin=self.pos))
+                self.progress()
             else:
                 begin = self.pos.copy()
                 char = self.current_char
@@ -76,6 +78,17 @@ class Lexer:
 
         tokens.append(Token(eofXD, begin=self.pos))
         return tokens, None
+
+    def make_minus_or_arrow(self):
+        tok_type = minusXD
+        begin = self.pos.copy()
+        self.progress()
+
+        if self.current_char == '>':
+            self.progress()
+            tok_type = arrowXD
+
+        return Token(tok_type, begin=begin, end=self.pos)
 
     def make_number(self):
         num_str = ''

@@ -50,6 +50,46 @@ class Parser:
             ))
         return res
 
+
+    def call(self):
+        res = ParseResult()
+        atom = res.register(self.atom())
+        if res.error: return res
+
+        if self.current_tok.type == lparenXD:
+            res.register_progression()
+            self.progress()
+            arg_nodes = []
+
+            if self.current_tok.type == rparenXD:
+                res.register_progression()
+                self.progress()
+            else:
+                arg_nodes.append(res.register(self.expr()))
+                if res.error:
+                    return res.failure(InvalidSyntaxError(
+                        self.current_tok.begin, self.current_tok.end,
+                        "Expected ')', 'LICZBA', 'JEŻELI', 'DOPÓKI', 'FUNKCJA', identifier, '+', '-', '(' or 'NIE'"
+                    ))
+
+                while self.current_tok.type == commaXD:
+                    res.register_progression()
+                    self.progress()
+
+                    arg_nodes.append(res.register(self.expr()))
+                    if res.error: return res
+
+                if self.current_tok.type != rparenXD:
+                    return res.failure(InvalidSyntaxError(
+                        self.current_tok.begin, self.current_tok.end,
+                        f"Expected ',' or ')'"
+                    ))
+
+                res.register_progression()
+                self.progress()
+            return res.success(CallNode(atom, arg_nodes))
+        return res.success(atom)
+
     def atom(self):
         res = ParseResult()
         tok = self.current_tok
@@ -92,12 +132,17 @@ class Parser:
             if res.error: return res
             return res.success(while_expr)
 
+        elif tok.matches(keywordXD, 'FUNKCJA'):
+            func_def = res.register(self.func_def())
+            if res.error: return res
+            return res.success(func_def)
+
         return res.failure(InvalidSyntaxError
                            (tok.begin, tok.end,
-                            "Oczekiwano int, float, '+', '-', '('"))
+                            "Oczekiwano int, float, '+', '-', '(', 'JEŻELI', 'DOPÓKI', 'FUNKCJA'"))
 
     def power(self):
-        return self.bin_op(self.atom, (powerXD,), self.factor)
+        return self.bin_op(self.call, (powerXD,), self.factor)
 
     def factor(self):
         res = ParseResult()
@@ -329,3 +374,89 @@ class Parser:
         if res.error: return res
 
         return res.success(WhileNode(condition, body))
+
+    def func_def(self):
+        res = ParseResult()
+
+        if not self.current_tok.matches(keywordXD, 'FUNKCJA'):
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.begin, self.current_tok.end,
+                f"Expected 'FUNKCJA'"
+            ))
+
+        res.register_progression()
+        self.progress()
+
+        if self.current_tok.type == identifierXD:
+            var_name_tok = self.current_tok
+            res.register_progression()
+            self.progress()
+            if self.current_tok.type != lparenXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    f"Expected '('"
+                ))
+        else:
+            var_name_tok = None
+            if self.current_tok.type != lparenXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    f"Expected identifier or '('"
+                ))
+
+        res.register_progression()
+        self.progress()
+        arg_name_toks = []
+
+        if self.current_tok.type == identifierXD:
+            arg_name_toks.append(self.current_tok)
+            res.register_progression()
+            self.progress()
+
+            while self.current_tok.type == commaXD:
+                res.register_progression()
+                self.progress()
+
+                if self.current_tok.type != identifierXD:
+                    return res.failure(InvalidSyntaxError(
+                        self.current_tok.begin, self.current_tok.end,
+                        f"Expected identifier"
+                    ))
+
+                arg_name_toks.append(self.current_tok)
+                res.register_progression()
+                self.progress()
+
+            if self.current_tok.type != rparenXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    f"Expected ',' or ')'"
+                ))
+        else:
+            if self.current_tok.type != rparenXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    f"Expected identifier or ')'"
+                ))
+
+        res.register_progression()
+        self.progress()
+
+        if self.current_tok.type != arrowXD:
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.begin, self.current_tok.end,
+                f"Expected '->'"
+            ))
+
+        res.register_progression()
+        self.progress()
+        node_to_return = res.register(self.expr())
+        if res.error: return res
+
+        return res.success(FuncDefNode(
+            var_name_tok,
+            arg_name_toks,
+            node_to_return
+        ))
+
+
