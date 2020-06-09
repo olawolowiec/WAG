@@ -20,6 +20,7 @@ gtXD = 'gt'
 lteXD = 'lte' 
 gteXD = 'gte'
 commaXD = 'comma'
+arrowXD = 'arrow'
 
 
 
@@ -33,8 +34,8 @@ keywordsXD = [
     'JEŻELI', #if
     'BĄDŹ', #else if
     'W_PRZECIWNYM_PRZYPADKU', #else
-    "TO" #then
-    
+    "TO",  #then
+    'FUNKCJA'
 ]
 
 class Token:
