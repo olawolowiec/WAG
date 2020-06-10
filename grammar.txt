@@ -1,12 +1,72 @@
-expr        : comp ((keywordXD:I|keywordXD:LUB) comp-expr)*
+statements  : newline* statement (newline+ statement)* newline*
+
+statement		: keyword:PODSUMOWUJĄC expr?
+						: keyword:KONTYNUUJ
+						: keyword:BREAK
+						: expr
+
+expr        : keyword:ZMIENNA identifier eq expr
+            : comp-expr ((keyword:ORAZ|keyword:LUB) comp-expr)*
+
 comp-expr   : NIE comp-expr
-            : arith-expr ((eeXD|ltXD|gtXD|lteXD|gteXD) arith-expr )*
-arith-expr  : term((plusXD|minusXD) term)*
-term        : factor ((mulXD|divXD) factor)*
-factor      : (plusXD|minusXD) factor | power
-power       : atom (powerXD factor)*
-atom        : integerXD|floatXD|identifierXD
-            : lparenXD expr rparenXD
+            : arith-expr ((ee|lt|gt|lte|gte) arith-expr)*
+
+arith-expr  :	term ((plus|minus) term)*
+
+term        : factor ((mul|div) factor)*
+
+factor      : (plus|minus) factor
+            : power
+
+power       : call (pow factor)*
+
+call        : atom (lparen (expr (comma expr)*)? rparen)?
+
+atom        : int|float|string|identifier
+            : lparen expr rparen
             : list-expr
-while-expr  : keywordXD:DOPÓKI expr keywordXD:DOPÓTY expr
-list-expr   : lsquareXD (expr (COMMA expr)*)? rsquareXD
+            : if-expr
+            : for-expr
+            : while-expr
+            : func-def
+
+list-expr   : lsquare (expr (comma expr)*)? rsquare
+
+if-expr     : keyword:JEŻELI expr keyword:THEN
+              (statement if-expr-b|if-expr-c?)
+            | (newline statements keyword:PODSUMOWUJĄC|if-expr-b|if-expr-c)
+
+if-expr-b   : keyword:BĄDŹ expr keyword:THEN
+              (statement if-expr-b|if-expr-c?)
+            | (newline statements keyword:PODSUMOWUJĄC|if-expr-b|if-expr-c)
+
+if-expr-c   : keyword:W_PRZECIWNYM_PRZYPADKU
+              statement
+            | (newline statements keyword:PODSUMOWUJĄC)
+
+for-expr    : keyword:FOR identifier eq expr keyword:TO expr 
+              (keyword:STEP expr)? keyword:THEN
+              statement
+            | (newline statements keyword:PODSUMOWUJĄC)
+
+while-expr  : keyword:DOPÓKI expr keyword:DOPÓTY
+              statement
+            | (newline statements keyword:PODSUMOWUJĄC)
+
+func-def    : keyword:TEZA identifier?
+              lparen (identifier (comma identifier)*)? rparen
+              (arrow expr)
+            | (newline statements keyword:PODSUMOWUJĄC)
+
+
+
+Przykłady testowe:
+ZMIENNA a=8
+DOPÓKI a>0 DOPÓTY;  PRINT(a);;;;; ZMIENNA a=a-1; CO_KOŃCZY_DOWÓD
+
+TEZA test(); ZMIENNA foo=5; PODSUMOWUJĄC foo; CO_KOŃCZY_DOWÓD
+test()
+
+ZMIENNA a=[]
+FOR i=0 TO 10 THEN; IF i==4 THEN KONTYNUUJ ELIF i==8 THEN BREAK; ZMIENNA a=a+i; END
+a
