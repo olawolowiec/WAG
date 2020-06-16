@@ -1,5 +1,7 @@
 from tokens import *
 from values import *
+from values import Value
+
 
 class RTResult:
 	def __init__(self):
@@ -49,12 +51,17 @@ class Interpreter:
 		return method(node, context)
 
 	def no_visit_method(self, node, context):
-		raise Exception(f'No visit_{type(node).__name__} zdefiniowana metoda')
+		raise Exception(f'Nieodwiedzona_{type(node).__name__} zdefiniowana metoda')
 
 
 	def visit_NumberNode(self, node, context):
 		return RTResult().success(
 			Number(node.tok.value).set_context(context).set_pos(node.begin, node.end)
+		)
+
+	def visit_StringNode(self, node, context):
+		return RTResult().success(
+			String(node.tok.value).set_context(context).set_pos(node.begin, node.end)
 		)
 
 	def visit_ListNode(self, node, context):
@@ -67,7 +74,7 @@ class Interpreter:
 
 		return res.success(
 			List(elements).set_context(context).set_pos(node.begin, node.end)
-			)
+		)
 
 	def visit_VarAccessNode(self, node, context):
 		res = RTResult()
@@ -229,14 +236,14 @@ class Interpreter:
 			if len(args) > len(self.arg_names):
 				return res.failure(RTError(
 					self.begin, self.end,
-					f"{len(args) - len(self.arg_names)} too many args passed into '{self.name}'",
+					f"{len(args) - len(self.arg_names)} zbyt wiele argumentów przekazanych do '{self.name}'",
 					self.context
 				))
 
 			if len(args) < len(self.arg_names):
 				return res.failure(RTError(
 					self.begin, self.end,
-					f"{len(self.arg_names) - len(args)} too few args passed into '{self.name}'",
+					f"{len(self.arg_names) - len(args)} zbyt wiele argumentów przekazanych do '{self.name}'",
 					self.context
 				))
 
@@ -275,14 +282,14 @@ class Function(Value):
         if len(args) > len(self.arg_names):
             return res.failure(RTError(
                 self.begin, self.end,
-                f"{len(args) - len(self.arg_names)} too many args passed into '{self.name}'",
+                f"{len(args) - len(self.arg_names)} zbyt wiele argumentów przekazanych do '{self.name}'",
                 self.context
             ))
 
         if len(args) < len(self.arg_names):
             return res.failure(RTError(
                 self.begin, self.end,
-                f"{len(self.arg_names) - len(args)} too few args passed into '{self.name}'",
+                f"{len(self.arg_names) - len(args)} zbyt wiele argumentów przekazanych do '{self.name}'",
                 self.context
             ))
 

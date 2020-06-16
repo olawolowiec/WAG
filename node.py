@@ -8,6 +8,16 @@ class NumberNode:
 	def __repr__(self):
 		return f'{self.tok}'
 
+class StringNode:
+	def __init__(self, tok):
+		self.tok = tok
+
+		self.begin = self.tok.begin
+		self.end = self.tok.end
+
+	def __repr__(self):
+		return f'{self.tok}'
+
 class ListNode:
 	def __init__(self, element_nodes, begin, end):
 		self.element_nodes = element_nodes

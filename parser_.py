@@ -46,7 +46,7 @@ class Parser:
         if not res.error and self.current_tok.type != eofXD:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                "Oczekiwany znak '+', '-', '*', '/' or '^'"
+                "Oczekiwany znak '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'I' lub 'LUB'"
             ))
         return res
 
@@ -69,7 +69,7 @@ class Parser:
                 if res.error:
                     return res.failure(InvalidSyntaxError(
                         self.current_tok.begin, self.current_tok.end,
-                        "Expected ')', 'LICZBA', 'JEŻELI', 'DOPÓKI', 'FUNKCJA', identifier, '+', '-', '(' or 'NIE'"
+                        "Oczekiwany znak ')', 'LICZBA','WARTOŚĆ_LOGICZNA', 'TABLICA' 'JEŻELI', 'DOPÓKI', 'FUNKCJA', liczba, identyfikator, '+', '-', '(', '[' lub 'NIE'"
                     ))
 
                 while self.current_tok.type == commaXD:
@@ -82,7 +82,7 @@ class Parser:
                 if self.current_tok.type != rparenXD:
                     return res.failure(InvalidSyntaxError(
                         self.current_tok.begin, self.current_tok.end,
-                        f"Expected ',' or ')'"
+                        f"Oczekiwany znak ',' lub ')'"
                     ))
 
                 res.register_progression()
@@ -104,6 +104,11 @@ class Parser:
             self.progress()
             return res.success(VarAccessNode(tok))
 
+        elif tok.type == stringXD:
+            res.register_progression()
+            self.progress()
+            return res.success(StringNode(tok))
+
         elif tok.type == lparenXD:
             res.register_progression()
             self.progress()
@@ -116,7 +121,7 @@ class Parser:
             else:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Oczekiwano ')'"
+                    "Oczekiwany znak ')'"
                 ))
         elif tok.type == lsquareXD:
             list_expr = res.register(self.list_expr())
@@ -139,7 +144,7 @@ class Parser:
 
         return res.failure(InvalidSyntaxError
                            (tok.begin, tok.end,
-                            "Oczekiwano int, float, '+', '-', '(', 'JEŻELI', 'DOPÓKI', 'FUNKCJA'"))
+                            "Oczekiwana wartość liczba, identyfikator, '+', '-', '(', '[', 'JEŻELI', 'DOPÓKI', 'FUNKCJA'"))
 
     def power(self):
         return self.bin_op(self.call, (powerXD,), self.factor)
@@ -179,7 +184,7 @@ class Parser:
         if res.error:
             return res.failure(InvalidSyntaxError(
 				self.current_tok.begin, self.current_tok.end,
-				"Oczekiwano int, float, identifier, '+', '-', '(' or 'NIE'"
+				"Oczekiwana wartość: liczba, identyfikator, '+', '-', '(', '[' lub 'NIE'"
 			))
 
         return res.success(node)
@@ -187,14 +192,67 @@ class Parser:
     def expr(self):
         res = ParseResult()
 
-        if self.current_tok.matches(keywordXD, 'ZMIENNA'):
+        if self.current_tok.matches(keywordXD, 'LICZBA'):
             res.register_progression()
             self.progress()
 
             if self.current_tok.type != identifierXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Oczekiwany identyfikator"
+                    "Oczekiwano identyfikatora LICZBA"
+                ))
+
+            var_name = self.current_tok
+            res.register_progression()
+            self.progress()
+
+            if self.current_tok.type != equalXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    "Oczekiwany znak '='"
+                ))
+
+            res.register_progression()
+            self.progress()
+            expr = res.register(self.expr())
+            if res.error: return res
+            return res.success(VarAssignNode(var_name, expr))
+
+        if self.current_tok.matches(keywordXD, 'TABLICA'):
+            res.register_progression()
+            self.progress()
+
+            if self.current_tok.type != identifierXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    "Oczekiwano identyfikatora TABLICA"
+                ))
+
+            var_name = self.current_tok
+            res.register_progression()
+            self.progress()
+
+            if self.current_tok.type != equalXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    "Oczekiwany znak '='"
+                ))
+
+            res.register_progression()
+            self.progress()
+            expr = res.register(self.expr())
+            if res.error: return res
+            return res.success(VarAssignNode(var_name, expr))
+
+
+        if self.current_tok.matches(keywordXD, 'WARTOŚĆ_LOGICZNA'):
+            res.register_progression()
+            self.progress()
+
+            if self.current_tok.type != identifierXD:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.begin, self.current_tok.end,
+                    "Oczekiwano identyfikatora WARTOŚĆ_LOGICZNA"
                 ))
 
             var_name = self.current_tok
@@ -218,7 +276,7 @@ class Parser:
         if res.error:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                "Oczekiwano 'ZMIENNA', int, float, identifier, '+', '-' or '('"
+                "Oczekiwana wartość: liczba, identyfikator, '+', '-', '[' lub '('"
             ))
 
         return res.success(node)
@@ -262,7 +320,7 @@ class Parser:
             if res.error:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    "Oczekiwany znak ']', 'ZMIENNA', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'Nie'"
+                    "Oczekiwany znak ']', 'LICZBA', 'TABLICA', 'WARTOŚĆ_LOGICZNA', 'JEŻELI', 'DOPÓKI', 'FUNKCJA, liczba, identyfikator, '+', '-', '(', '[' lub 'Nie'"
                 ))
 
             while self.current_tok.type == commaXD:
@@ -295,7 +353,7 @@ class Parser:
         if not self.current_tok.matches(keywordXD, 'JEŻELI'):
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected 'JEŻELI'"
+                f"Oczekiwana wartość 'JEŻELI'"
             ))
 
         res.register_progression()
@@ -307,7 +365,7 @@ class Parser:
         if not self.current_tok.matches(keywordXD, 'TO'):
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected 'TO'"
+                f"Oczekiwana wartość 'TO'"
             ))
 
         res.register_progression()
@@ -327,7 +385,7 @@ class Parser:
             if not self.current_tok.matches(keywordXD, 'TO'):
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    f"Expected 'TO'"
+                    f"Oczekiwana wartość 'TO'"
                 ))
 
             res.register_progression()
@@ -352,7 +410,7 @@ class Parser:
         if not self.current_tok.matches(keywordXD, 'DOPÓKI'):
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected 'DOPÓKI'"
+                f"Oczekiwana wartość 'DOPÓKI'"
             ))
 
         res.register_progression()
@@ -364,7 +422,7 @@ class Parser:
         if not self.current_tok.matches(keywordXD, 'DOPÓTY'):
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected 'DOPÓTY'"
+                f"Oczekiwana wartość 'DOPÓTY'"
             ))
 
         res.register_progression()
@@ -381,7 +439,7 @@ class Parser:
         if not self.current_tok.matches(keywordXD, 'FUNKCJA'):
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected 'FUNKCJA'"
+                f"Oczekiwana wartość 'FUNKCJA'"
             ))
 
         res.register_progression()
@@ -394,7 +452,7 @@ class Parser:
             if self.current_tok.type != lparenXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    f"Expected '('"
+                    f"Oczekiwany znak '('"
                 ))
         else:
             var_name_tok = None
@@ -420,7 +478,7 @@ class Parser:
                 if self.current_tok.type != identifierXD:
                     return res.failure(InvalidSyntaxError(
                         self.current_tok.begin, self.current_tok.end,
-                        f"Expected identifier"
+                        f"Oczekiwano identyfikatora"
                     ))
 
                 arg_name_toks.append(self.current_tok)
@@ -430,13 +488,13 @@ class Parser:
             if self.current_tok.type != rparenXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    f"Expected ',' or ')'"
+                    f"Oczekiwany znak ',' lub ')'"
                 ))
         else:
             if self.current_tok.type != rparenXD:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.begin, self.current_tok.end,
-                    f"Expected identifier or ')'"
+                    f"Oczekiwano identyfikatora lub ')'"
                 ))
 
         res.register_progression()
@@ -445,7 +503,7 @@ class Parser:
         if self.current_tok.type != arrowXD:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.begin, self.current_tok.end,
-                f"Expected '->'"
+                f"Oczekiwany znak '->'"
             ))
 
         res.register_progression()

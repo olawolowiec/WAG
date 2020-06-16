@@ -1,5 +1,6 @@
 intXD = 'integer'
 floatXD = 'float'
+stringXD = 'string'
 identifierXD = 'identifier'
 keywordXD = 'keyword'
 plusXD = 'plus'
@@ -25,7 +26,9 @@ arrowXD = 'arrow'
 
 
 keywordsXD = [
-    'ZMIENNA',
+    'LICZBA',
+    'TABLICA',
+    'WARTOŚĆ_LOGICZNA',
     'LUB',
     'I',
     'NIE',

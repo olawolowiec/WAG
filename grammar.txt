@@ -5,7 +5,7 @@ arith-expr  : term((plusXD|minusXD) term)*
 term        : factor ((mulXD|divXD) factor)*
 factor      : (plusXD|minusXD) factor | power
 power       : atom (powerXD factor)*
-atom        : integerXD|floatXD|identifierXD
+atom        : integerXD|floatXD|identifierXD|stringXD
             : lparenXD expr rparenXD
             : list-expr
 while-expr  : keywordXD:DOPÓKI expr keywordXD:DOPÓTY expr

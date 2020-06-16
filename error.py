@@ -48,4 +48,4 @@ class RTError(Error):
             pos = ctx.parent_entry_pos
             ctx = ctx.parent
 
-        return 'Traceback (Najnowsze wywołane połączenie):\n' + result
+        return 'Traceback (Najnowsze wywołanie):\n' + result
