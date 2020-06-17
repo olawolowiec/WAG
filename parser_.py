@@ -128,7 +128,7 @@ class Parser:
       self.progress()
       return res.success(ContinueNode(begin, self.current_tok.begin.copy()))
       
-    if self.current_tok.matches(keywordXD, 'BREAK'):
+    if self.current_tok.matches(keywordXD, 'PRZERWIJ'):
       res.register_progression()
       self.progress()
       return res.success(BreakNode(begin, self.current_tok.begin.copy()))
@@ -137,7 +137,7 @@ class Parser:
     if res.error:
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        "Expected 'PODSUMOWUJĄC', 'KONTYNUUJ', 'BREAK', 'ZMIENNA', 'JEŻELI', 'FOR', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
+        "Expected 'PODSUMOWUJĄC', 'KONTYNUUJ', 'PRZERWIJ', 'ZMIENNA', 'JEŻELI', 'DLA', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
       ))
     return res.success(expr)
 
@@ -175,7 +175,7 @@ class Parser:
     if res.error:
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        "Expected 'ZMIENNA', 'JEŻELI', 'FOR', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
+        "Expected 'ZMIENNA', 'JEŻELI', 'DLA', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
       ))
 
     return res.success(node)
@@ -197,7 +197,7 @@ class Parser:
     if res.error:
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        "Expected int, float, identifier, '+', '-', '(', '[', 'JEŻELI', 'FOR', 'DOPÓKI', 'TEZA' or 'NIE'"
+        "Expected int, float, identifier, '+', '-', '(', '[', 'JEŻELI', 'DLA', 'DOPÓKI', 'TEZA' or 'NIE'"
       ))
 
     return res.success(node)
@@ -307,7 +307,7 @@ class Parser:
       if res.error: return res
       return res.success(if_expr)
 
-    elif tok.matches(keywordXD, 'FOR'):
+    elif tok.matches(keywordXD, 'DLA'):
       for_expr = res.register(self.for_expr())
       if res.error: return res
       return res.success(for_expr)
@@ -324,7 +324,7 @@ class Parser:
 
     return res.failure(InvalidSyntaxError(
       tok.begin, tok.end,
-      "Expected int, float, identifier, '+', '-', '(', '[', IF', 'FOR', 'DOPÓKI', 'TEZA'"
+      "Expected int, float, identifier, '+', '-', '(', '[', JEŻELI', 'DLA', 'DOPÓKI', 'TEZA'"
     ))
 
   def list_expr(self):
@@ -349,7 +349,7 @@ class Parser:
       if res.error:
         return res.failure(InvalidSyntaxError(
           self.current_tok.begin, self.current_tok.end,
-          "Expected ']', 'ZMIENNA', 'JEŻELI', 'FOR', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
+          "Expected ']', 'ZMIENNA', 'JEŻELI', 'DLA', 'DOPÓKI', 'TEZA', int, float, identifier, '+', '-', '(', '[' or 'NIE'"
         ))
 
       while self.current_tok.type == commaXD:
@@ -446,10 +446,10 @@ class Parser:
     condition = res.register(self.expr())
     if res.error: return res
 
-    if not self.current_tok.matches(keywordXD, 'WTEDY'):
+    if not self.current_tok.matches(keywordXD, 'WYKONAJ'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'WTEDY'"
+        f"Expected 'WYKONAJ'"
       ))
 
     res.register_progression()
@@ -486,10 +486,10 @@ class Parser:
   def for_expr(self):
     res = ParseResult()
 
-    if not self.current_tok.matches(keywordXD, 'FOR'):
+    if not self.current_tok.matches(keywordXD, 'DLA'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'FOR'"
+        f"Expected 'DLA'"
       ))
 
     res.register_progression()
@@ -517,10 +517,10 @@ class Parser:
     start_value = res.register(self.expr())
     if res.error: return res
 
-    if not self.current_tok.matches(keywordXD, 'TO'):
+    if not self.current_tok.matches(keywordXD, 'DO'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'TO'"
+        f"Expected 'DO'"
       ))
     
     res.register_progression()
@@ -529,7 +529,7 @@ class Parser:
     end_value = res.register(self.expr())
     if res.error: return res
 
-    if self.current_tok.matches(keywordXD, 'STEP'):
+    if self.current_tok.matches(keywordXD, 'KROK'):
       res.register_progression()
       self.progress()
 
@@ -538,10 +538,10 @@ class Parser:
     else:
       step_value = None
 
-    if not self.current_tok.matches(keywordXD, 'WTEDY'):
+    if not self.current_tok.matches(keywordXD, 'WYKONAJ'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'WTEDY'"
+        f"Expected 'WYKONAJ'"
       ))
 
     res.register_progression()

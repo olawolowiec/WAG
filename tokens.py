@@ -34,19 +34,19 @@ KEYWORDS = [
   'JEŻELI',#IF  
   'BĄDŹ',#ELIF
   'PRZECIWNIE',#ELSE
-  #JEŻELI .. THEN .. BĄDŹ .. THEN ..  W_PRZECIWNYM_PRZYPADKU ..
-  'FOR',#FOR
-  'TO',#(FOR).. TO .. (STEP) .. THEN; ...
-  'STEP',
+  #JEŻELI .. WTEDY .. BĄDŹ .. WTEDY ..  PRZECIWNIE ..
+  'DLA',#FOR
+  'DO',#(FOR).. TO .. (STEP) .. THEN; ...
+  'KROK',
   'DOPÓKI',#WHILE
   'DOPÓTY',#(DOPÓKI)..DOPÓTY; ..
   'TEZA',#FUN
   #TEZA (); .. ; PODSUMOWUJĄC .. ; CO_KOŃCZY_DOWÓD
-  'WTEDY',#THEN na to nie mam pomysłu, żeby pasowało;  ?wtedy?
+  'WYKONAJ',#THEN na to nie mam pomysłu, żeby pasowało;  ?wtedy?
   'CO_KOŃCZY_DOWÓD',#END
   'PODSUMOWUJĄC',#RETURN
   'KONTYNUUJ',#CONTINUE
-  'BREAK',#BREAK
+  'PRZERWIJ',#BREAK
 ]
 
 class Token:
