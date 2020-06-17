@@ -12,7 +12,7 @@ class Interpreter:
     return method(node, context)
 
   def no_visit_method(self, node, context):
-    raise Exception(f'No visit_{type(node).__name__} method defined')
+    raise Exception(f'Brak odwiedzonego węzła_{type(node).__name__}')
 
 
   def visit_NumberNode(self, node, context):
@@ -45,7 +45,7 @@ class Interpreter:
     if not value:
       return res.failure(RTError(
         node.begin, node.end,
-        f"'{var_name}' is not defined",
+        f"'{var_name}'nie jest zdefiniowana",
         context
       ))
 

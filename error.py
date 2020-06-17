@@ -1,5 +1,4 @@
-
-from string_with_arrows import *
+from string_with_arrows import string_with_arrows
 
 class Error:
   def __init__(self, begin, end, error_name, details):
@@ -10,25 +9,25 @@ class Error:
   
   def as_string(self):
     result  = f'{self.error_name}: {self.details}\n'
-    result += f'File {self.begin.fn}, line {self.begin.ln + 1}'
+    result += f'Plik {self.begin.fn}, wiersz {self.begin.ln + 1}'
     result += '\n\n' + string_with_arrows(self.begin.ftxt, self.begin, self.end)
     return result
 
 class IllegalCharError(Error):
   def __init__(self, begin, end, details):
-    super().__init__(begin, end, 'Illegal Character', details)
+    super().__init__(begin, end, 'Niedozwolony znak', details)
 
 class ExpectedCharError(Error):
   def __init__(self, begin, end, details):
-    super().__init__(begin, end, 'Expected Character', details)
+    super().__init__(begin, end, 'Oczekiwany znak', details)
 
 class InvalidSyntaxError(Error):
   def __init__(self, begin, end, details=''):
-    super().__init__(begin, end, 'Invalid Syntax', details)
+    super().__init__(begin, end, 'Niepoprawna składnia', details)
 
 class RTError(Error):
   def __init__(self, begin, end, details, context):
-    super().__init__(begin, end, 'Runtime Error', details)
+    super().__init__(begin, end, 'Błąd czasu wykonywania', details)
     self.context = context
 
   def as_string(self):
@@ -43,8 +42,8 @@ class RTError(Error):
     ctx = self.context
 
     while ctx:
-      result = f'  File {pos.fn}, line {str(pos.ln + 1)}, in {ctx.display_name}\n' + result
+      result = f'  Plik {pos.fn}, wiersz {str(pos.ln + 1)}, in {ctx.display_name}\n' + result
       pos = ctx.parent_entry_pos
       ctx = ctx.parent
 
-    return 'Traceback (most recent call last):\n' + result
+    return 'Traceback (ostatnie wywołanie):\n' + result

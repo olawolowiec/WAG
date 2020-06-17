@@ -140,14 +140,14 @@ class Value:
   def ored_by(self, other):
     return None, self.illegal_operation(other)
 
-  def notted(self):
+  def notted(self, other):
     return None, self.illegal_operation(other)
 
   def execute(self, args):
     return RTResult().failure(self.illegal_operation())
 
   def copy(self):
-    raise Exception('No copy method defined')
+    raise Exception('Niezdefiniowana metoda copy')
 
   def is_true(self):
     return False
@@ -156,7 +156,7 @@ class Value:
     if not other: other = self
     return RTError(
       self.begin, other.end,
-      'Illegal operation',
+      'Niedozwolona operacja',
       self.context
     )
 
@@ -188,7 +188,7 @@ class Number(Value):
       if other.value == 0:
         return None, RTError(
           other.begin, other.end,
-          'Division by zero',
+          'Pamiętaj cholero nie dziel przez zero',
           self.context
         )
 
@@ -324,7 +324,7 @@ class List(Value):
       except:
         return None, RTError(
           other.begin, other.end,
-          'Element at this index could not be removed from list because index is out of bounds',
+          'Element o tym indeksie nie może zostać usunięty z listy, ponieważ jest spoza zakresu',
           self.context
         )
     else:
@@ -345,7 +345,7 @@ class List(Value):
       except:
         return None, RTError(
           other.begin, other.end,
-          'Element at this index could not be retrieved from list because index is out of bounds',
+          'Element o tym indeksie nie może zostać pobrany z listy, ponieważ jest spoza zakresu',
           self.context
         )
     else:
@@ -379,14 +379,14 @@ class BaseFunction(Value):
     if len(args) > len(arg_names):
       return res.failure(RTError(
         self.begin, self.end,
-        f"{len(args) - len(arg_names)} too many args passed into {self}",
+        f"{len(args) - len(arg_names)} przekazano za dużo argumentów {self}",
         self.context
       ))
     
     if len(args) < len(arg_names):
       return res.failure(RTError(
         self.begin, self.end,
-        f"{len(arg_names) - len(args)} too few args passed into {self}",
+        f"{len(arg_names) - len(args)} przekazano za dużo argumentów {self}",
         self.context
       ))
 
@@ -444,7 +444,7 @@ class BuiltInFunction(BaseFunction):
     res = RTResult()
     exec_ctx = self.generate_new_context()
 
-    method_name = f'execute_{self.name}'
+    method_name = f'wykonano{self.name}'
     method = getattr(self, method_name, self.no_visit_method)
 
     res.register(self.check_and_populate_args(method.arg_names, args, exec_ctx))
@@ -455,7 +455,7 @@ class BuiltInFunction(BaseFunction):
     return res.success(return_value)
   
   def no_visit_method(self, node, context):
-    raise Exception(f'No execute_{self.name} method defined')
+    raise Exception(f'Nie wykonano zdefiniowanej metody{self.name}')
 
   def copy(self):
     copy = BuiltInFunction(self.name)
@@ -464,7 +464,7 @@ class BuiltInFunction(BaseFunction):
     return copy
 
   def __repr__(self):
-    return f"<built-in function {self.name}>"
+    return f"<wbudowana funkcja {self.name}>"
 
   #####################################
 
@@ -489,7 +489,7 @@ class BuiltInFunction(BaseFunction):
         number = int(text)
         break
       except ValueError:
-        print(f"'{text}' must be an integer. Try again!")
+        print(f"'{text}' wymagana liczba całkowita. Spróbuj jeszcze raz!")
     return RTResult().success(Number(number))
   execute_input_int.arg_names = []
 
@@ -525,7 +525,7 @@ class BuiltInFunction(BaseFunction):
     if not isinstance(list_, List):
       return RTResult().failure(RTError(
         self.begin, self.end,
-        "First argument must be list",
+        "Pierwszym argumentem musi być lista",
         exec_ctx
       ))
 
@@ -540,14 +540,14 @@ class BuiltInFunction(BaseFunction):
     if not isinstance(list_, List):
       return RTResult().failure(RTError(
         self.begin, self.end,
-        "First argument must be list",
+        "Pierwszym argumentem musi być lista",
         exec_ctx
       ))
 
     if not isinstance(index, Number):
       return RTResult().failure(RTError(
         self.begin, self.end,
-        "Second argument must be number",
+        "Drugim argumentem musi być liczba",
         exec_ctx
       ))
 
@@ -556,7 +556,7 @@ class BuiltInFunction(BaseFunction):
     except:
       return RTResult().failure(RTError(
         self.begin, self.end,
-        'Element at this index could not be removed from list because index is out of bounds',
+        'Element o tym indeksie nie może zostać usunięty z listy, ponieważ jest spoza zakresu',
         exec_ctx
       ))
     return RTResult().success(element)
@@ -569,14 +569,14 @@ class BuiltInFunction(BaseFunction):
     if not isinstance(listA, List):
       return RTResult().failure(RTError(
         self.begin, self.end,
-        "First argument must be list",
+        "Pierwszym argumentem musi być lista",
         exec_ctx
       ))
 
     if not isinstance(listB, List):
       return RTResult().failure(RTError(
         self.begin, self.end,
-        "Second argument must be list",
+        "Drugim argumentem musi być lista",
         exec_ctx
       ))
 
@@ -590,7 +590,7 @@ class BuiltInFunction(BaseFunction):
     if not isinstance(fn, String):
       return RTResult().failure(RTError(
         self.pos_start, self.pos_end,
-        "Second argument must be string",
+        "Drugim argumentem musi być lista",
         exec_ctx
       ))
 
@@ -602,7 +602,7 @@ class BuiltInFunction(BaseFunction):
     except Exception as e:
       return RTResult().failure(RTError(
         self.pos_start, self.pos_end,
-        f"Failed to load script \"{fn}\"\n" + str(e),
+        f"Nie udało się załadować skryptu \"{fn}\"\n" + str(e),
         exec_ctx
       ))
 
@@ -611,7 +611,7 @@ class BuiltInFunction(BaseFunction):
     if error:
       return RTResult().failure(RTError(
         self.pos_start, self.pos_end,
-        f"Failed to finish executing script \"{fn}\"\n" +
+        f"Nie udało się zakończyć wykonywania skryptu \"{fn}\"\n" +
         error.as_string(),
         exec_ctx
       ))
