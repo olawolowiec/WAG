@@ -23,6 +23,11 @@ global_symbol_table.set("IS_FUN", BuiltInFunction.is_function)
 global_symbol_table.set("APPEND", BuiltInFunction.append)
 global_symbol_table.set("POP", BuiltInFunction.pop)
 global_symbol_table.set("EXTEND", BuiltInFunction.extend)
+global_symbol_table.set("RUN", BuiltInFunction.run)
+
+def WagOperation(arg,i = 0):
+  result, error = wag.run('<stdin>', arg)
+  return result.elements[i].value
 
 def run(fn, text):
   # Generate tokens
