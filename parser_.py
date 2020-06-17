@@ -684,7 +684,7 @@ class Parser:
     res.register_progression()
     self.progress()
 
-    if self.current_tok.type == arrowXD:
+    if self.current_tok.type == colonXD:
       res.register_progression()
       self.progress()
 

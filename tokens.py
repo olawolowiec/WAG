@@ -25,6 +25,7 @@ commaXD		= 'comma'
 arrowXD		= 'arrow'
 newlineXD	= 'newline'
 eofXD		= 'eof'
+colonXD     = 'colon'
 
 KEYWORDS = [
   'ZMIENNA',#VAR
@@ -34,15 +35,15 @@ KEYWORDS = [
   'JEŻELI',#IF  
   'BĄDŹ',#ELIF
   'PRZECIWNIE',#ELSE
-  #JEŻELI .. WTEDY .. BĄDŹ .. WTEDY ..  PRZECIWNIE ..
+  #JEŻELI .. WYKONAJ .. BĄDŹ .. WYKONAJ ..  PRZECIWNIE ..
   'DLA',#FOR
-  'DO',#(FOR).. TO .. (STEP) .. THEN; ...
-  'KROK',
+  'DO',#(DLA).. DO .. (KROK) .. WYKONAJ; ...
+  'KROK',#STEP
   'DOPÓKI',#WHILE
   'DOPÓTY',#(DOPÓKI)..DOPÓTY; ..
   'TEZA',#FUN
   #TEZA (); .. ; PODSUMOWUJĄC .. ; CO_KOŃCZY_DOWÓD
-  'WYKONAJ',#THEN na to nie mam pomysłu, żeby pasowało;  ?wtedy?
+  'WYKONAJ',#THEN
   'CO_KOŃCZY_DOWÓD',#END
   'PODSUMOWUJĄC',#RETURN
   'KONTYNUUJ',#CONTINUE

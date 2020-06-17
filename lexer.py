@@ -75,6 +75,9 @@ class Lexer:
       elif self.current_char == ',':
         tokens.append(Token(commaXD, begin=self.pos))
         self.progress()
+      elif self.current_char == ':':
+        tokens.append(Token(colonXD, begin=self.pos))
+        self.progress()
       else:
         begin = self.pos.copy()
         char = self.current_char
