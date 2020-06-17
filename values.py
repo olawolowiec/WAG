@@ -1,6 +1,7 @@
   
 from error import *
 from interpreter import *
+import wag
 import math
 import interpreter as interpreterModule
 import os
@@ -583,6 +584,42 @@ class BuiltInFunction(BaseFunction):
     return RTResult().success(Number.null)
   execute_extend.arg_names = ["listA", "listB"]
 
+  def execute_run(self, exec_ctx):
+    fn = exec_ctx.symbol_table.get("fn")
+
+    if not isinstance(fn, String):
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        "Second argument must be string",
+        exec_ctx
+      ))
+
+    fn = fn.value
+
+    try:
+      with open(fn, "r") as f:
+        script = f.read()
+    except Exception as e:
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        f"Failed to load script \"{fn}\"\n" + str(e),
+        exec_ctx
+      ))
+
+    _, error = wag.run(fn, script)
+
+    if error:
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        f"Failed to finish executing script \"{fn}\"\n" +
+        error.as_string(),
+        exec_ctx
+      ))
+
+    return RTResult().success(Number.null)
+  execute_run.arg_names = ["fn"]  
+
+
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
@@ -595,3 +632,4 @@ BuiltInFunction.is_function = BuiltInFunction("is_function")
 BuiltInFunction.append      = BuiltInFunction("append")
 BuiltInFunction.pop         = BuiltInFunction("pop")
 BuiltInFunction.extend      = BuiltInFunction("extend")
+BuiltInFunction.run					= BuiltInFunction("run")
