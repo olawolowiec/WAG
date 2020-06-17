@@ -1,9 +1,7 @@
 import unittest   # The test framework
-#from wag import *
+
 import os, sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import wag
 
 class Test_TestArytmetic(unittest.TestCase):
@@ -48,9 +46,43 @@ class Test_TestFunction(unittest.TestCase):
         """
         ,1))
 
+class Test_Logic(unittest.TestCase):
+    def test_if(self):
+        self.assertEqual(1, wag.WagOperation(
+        """  
+        ZMIENNA a=1
+        JEŻELI a==2 WYKONAJ false BĄDŹ a==3 WYKONAJ false PRZECIWNIE true
+        """
+        ,1))
 
+    def test_if_multiline(self):
+        self.assertEqual(1, wag.WagOperation(
+        """  
+        ZMIENNA a=2;
+        JEŻELI a==1 WYKONAJ; PRINT(1); PRINT(2); BĄDŹ a==2 WYKONAJ; PRINT(3); PRINT(4); PRZECIWNIE PRINT(5); PODSUMOWUJĄC
+        """
+        ,1))
 
+class Test_Loop(unittest.TestCase):
+    def test_for(self):
+        self.assertEqual(45, wag.WagOperation(
+        """  
+        ZMIENNA a = 0
+        DLA i=0 DO 10 WYKONAJ;
+        ZMIENNA a=a+i; 
+        CO_KOŃCZY_DOWÓD
+        a
+        """
+        ,2))
 
+    def test_while(self):
+         self.assertEqual(5, wag.WagOperation(
+        """  
+        ZMIENNA a = 0;
+        DOPÓKI a < 5 DOPÓTY ZMIENNA a= a+1;
+        a;
+        """
+        ,2))
 
 if __name__ == '__main__':
     unittest.main()
