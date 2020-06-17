@@ -388,7 +388,7 @@ class Parser:
     res = ParseResult()
     else_case = None
 
-    if self.current_tok.matches(keywordXD, 'W_PRZECIWNYM_PRZYPADKU'):
+    if self.current_tok.matches(keywordXD, 'PRZECIWNIE'):
       res.register_progression()
       self.progress()
 
@@ -446,10 +446,10 @@ class Parser:
     condition = res.register(self.expr())
     if res.error: return res
 
-    if not self.current_tok.matches(keywordXD, 'THEN'):
+    if not self.current_tok.matches(keywordXD, 'WTEDY'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'THEN'"
+        f"Expected 'WTEDY'"
       ))
 
     res.register_progression()
@@ -538,10 +538,10 @@ class Parser:
     else:
       step_value = None
 
-    if not self.current_tok.matches(keywordXD, 'THEN'):
+    if not self.current_tok.matches(keywordXD, 'WTEDY'):
       return res.failure(InvalidSyntaxError(
         self.current_tok.begin, self.current_tok.end,
-        f"Expected 'THEN'"
+        f"Expected 'WTEDY'"
       ))
 
     res.register_progression()

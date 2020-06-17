@@ -33,7 +33,7 @@ KEYWORDS = [
   'NIE',#NOT
   'JEŻELI',#IF  
   'BĄDŹ',#ELIF
-  'W_PRZECIWNYM_PRZYPADKU',#ELSE
+  'PRZECIWNIE',#ELSE
   #JEŻELI .. THEN .. BĄDŹ .. THEN ..  W_PRZECIWNYM_PRZYPADKU ..
   'FOR',#FOR
   'TO',#(FOR).. TO .. (STEP) .. THEN; ...
@@ -42,7 +42,7 @@ KEYWORDS = [
   'DOPÓTY',#(DOPÓKI)..DOPÓTY; ..
   'TEZA',#FUN
   #TEZA (); .. ; PODSUMOWUJĄC .. ; CO_KOŃCZY_DOWÓD
-  'THEN',#THEN na to nie mam pomysłu, żeby pasowało;  ?wtedy?
+  'WTEDY',#THEN na to nie mam pomysłu, żeby pasowało;  ?wtedy?
   'CO_KOŃCZY_DOWÓD',#END
   'PODSUMOWUJĄC',#RETURN
   'KONTYNUUJ',#CONTINUE
